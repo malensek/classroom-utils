@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+exec &> "./grade-info.md"
+
+echo "# Grade Information"
+echo
+echo "## Compilation"
+echo
+echo '```' #####################################################################
+gcc -g -Wall -std=c99 first.c -o first
+if [[ $? -eq 0 ]]; then
+    echo "Compile [OK]";
+else
+    echo "Compile [FAILED]";
+echo '```' #####################################################################
+    exit 1
+fi
+echo '```' #####################################################################
+
+echo "## Test Cases"
+echo
+
+echo "**Test 0: Program Execution**"
+echo
+echo '```' #####################################################################
+echo
+./first
+echo
+echo '```' #####################################################################
+

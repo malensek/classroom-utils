@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+exec_script() {
+    dir="${1}"
+    script="${2}"
+    if [[ -d "${dir}" ]]; then
+        cd "${dir}"
+        bash "${script}"
+        cd ..
+        echo "[+] ${dir}"
+    fi
+}
+
+if [[ ${#} -ne 2 ]]; then
+    echo "Usage: $(basename "${0}") assignment-name grading-script"
+    exit 1
+fi
+
+script_path=$(echo "$(cd "$(dirname "${2}")"; pwd)/$(basename "${2}")")
+
+for i in ./working-dir/${1}*; do
+    exec_script "${i}" "${script_path}" &
+done

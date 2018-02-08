@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+if [[ ${#} -ne 1 ]]; then
+    echo "Usage: $(basename "${0}") assignment-name"
+    exit 1
+fi
+
+
+for i in ./working-dir/${1}*; do
+    if [[ -d "${i}" ]]; then
+        cd "${i}"
+        git add grade-info.md
+        git commit -m "Add grade"
+        git push
+        cd ..
+    fi
+done

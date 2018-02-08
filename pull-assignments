@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+
+unset assignment org_name github_token user_map
+
+print_usage() {
+cat <<EOM
+Usage: $(basename "${0}") [-u user-map] -a assignment-name -o org-name -t github-token
+
+Option descriptions:
+    * -a assignment-name    Assignment name (github repo prefix). Ex: hw1
+    * -o org-name           Github org name. Ex: usf-cs220-sp18
+    * -t github-token       Text file containing your github token
+    * -u user-map           File that maps Github usernames to Canvas usernames
+EOM
+}
+
+pull_repo() {
+    user="${1}"
+    remap="${user}"
+    if [[ ! -z "${user_map}" ]]; then
+        remap=$(grep "^${user}" "${user_map}" | awk '{print $2}')
+        if [[ -z "${remap}" ]]; then
+            echo "[!] WARNING: User ${user} not found in class mapping"
+            remap="${user}"
+        fi
+    fi
+    git clone --quiet "https://${github_token}@github.com/${org_name}/${assignment}-${user}" \
+        "./working-dir/${assignment}-${remap}"
+
+    if [[ "${user}" == "${remap}" ]]; then
+        echo "${user}"
+    else
+        echo "${user} -> ${remap}"
+    fi
+}
+
+while getopts "a:o:t:u:" flag; do
+    case ${flag} in
+        a) assignment="${OPTARG}" ;;
+        o) org_name="${OPTARG}" ;;
+        t) github_token="$(cat "${OPTARG}")" || exit 1 ;;
+        u) user_map="${OPTARG}" ;;
+    esac
+done
+
+shift $(($OPTIND - 1))
+
+if [[ -z ${assignment} || -z ${org_name} || -z ${github_token} ]]; then
+    print_usage
+    exit 1
+fi
+
+if [[ ! -z "${user_map}" && ! -e "${user_map}" ]]; then
+    echo "Could not find user map: ${user_map}"
+    exit 1
+fi
+
+mkdir ./working-dir
+
+repo_url="https://api.github.com/orgs/${org_name}/repos"
+repo_list=""
+page=1
+echo -n "Retrieving repositories for ${assignment}... "
+while true; do
+    echo -n "${page} "
+    repos=$(curl --silent --header "Authorization: token ${github_token}" \
+         --header 'Accept: application/vnd.github.v3.raw' \
+         --location "${repo_url}?page=${page}&per_page=100" \
+         | grep '"full_name": ')
+    if [[ "${repos}" == "" ]]; then
+        # No more repositories to check
+        break
+    fi
+    repo_list="${repo_list}"$'\n'"$(grep "${assignment}-" <<< "${repos}")"
+    (( page++ ))
+done
+echo
+
+user_list=$(sed "/^$/d; s|.*${org_name}/${assignment}-\(.*\)\",|\1|g" \
+    <<< "${repo_list}")
+if [[ -z "${user_list}" ]]; then
+    echo "Did not find any repositories!"
+    exit 1
+fi
+echo "Found $(wc -l <<< "${user_list}") repositories:"
+
+for user in ${user_list}; do
+    pull_repo "${user}" &
+done
+
+until wait; do :; done
