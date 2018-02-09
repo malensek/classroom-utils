@@ -1,5 +1,7 @@
 # classroom-utils
 
+Scripts for working with Github Classroom.
+
 ## Usage
 
 To download assignments, use the pull-assignments script. In this example, we'll download Homework 1 (hw1) from the usf-cs220-sp18 Github organization. This will check out all repos that begin with 'hw1.'
