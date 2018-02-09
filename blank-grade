@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+exec &> "./grade-info.md"
+
+echo "# Grade Information"
+echo
+
