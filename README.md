@@ -22,7 +22,7 @@ You can run the grading script on each repo with:
 ```
 ./grade-all hw1 ./demo-script
 ```
-This will execute the commands in `demo-script` on all the repos. You'll want to check the output stored in `grade-info.md` files.
+This will execute the commands in `demo-script` on all the repos. You'll want to check the output stored in `grade-info.md` files. If you just want an empty grade-info.md file, use the `blank-grade` script. This is good for assignments that can't be auto-graded by a script.
 
 Finally, when the changes are ready, you can push them back to Github with:
 ```
