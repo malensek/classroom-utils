@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+for i in ./working-dir/*/grade-info.md; do
+    total=0
+    for j in $(sed -n 's|^\* .*\[-\([0-9]*\)\]|\1|p' "${i}"); do
+        (( total += j ))
+    done
+    echo "${i} ${total}"
+done
