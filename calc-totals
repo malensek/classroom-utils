@@ -3,6 +3,17 @@
 unset assignment_name
 max_points=0
 
+print_usage() {
+cat <<EOM
+Usage: $(basename "${0}") [-p max-points] assignment-name
+
+Option descriptions:
+    * -p max-points    Point maximum for the assignment, e.g., 100. By default
+                       this is 0 (meaning the total points deducted is displayed
+                       instead).
+EOM
+}
+
 while getopts "p:" flag; do
     case ${flag} in
         p) max_points="${OPTARG}" ;;
@@ -12,6 +23,11 @@ done
 shift $(($OPTIND - 1))
 
 assignment_name="${1}"
+
+if [[ -z "${assignment_name}" ]]; then
+    print_usage
+    exit 1
+fi
 
 for assignment in ./working-dir/"${assignment_name}"*/grade-info.md; do
     total=$(\
