@@ -1,9 +1,25 @@
 #!/usr/bin/env bash
 
-for i in ./working-dir/*/grade-info.md; do
-    total=0
-    for j in $(sed -n 's|^\* .*\[-\([0-9]*\)\]|\1|p' "${i}"); do
-        (( total += j ))
-    done
-    echo "${i} ${total}"
+unset assignment_name
+max_points=0
+
+while getopts "p:" flag; do
+    case ${flag} in
+        p) max_points="${OPTARG}" ;;
+    esac
 done
+
+shift $(($OPTIND - 1))
+
+assignment_name="${1}"
+
+for assignment in ./working-dir/"${assignment_name}"*/grade-info.md; do
+    total=$(\
+        sed -n 's|^\* .*\[-\([0-9\.]*\)\]|\1|p' "${assignment}" \
+        | awk '{ total += $1 } END { print ('"${max_points}"' - total) }');
+    student=$(\
+        sed "s|.*${assignment_name}-\(.*\)/grade-info.md|\1|g" \
+            <<< ${assignment})
+    echo "${student} ${total}"
+done | sort -f
+
