@@ -12,6 +12,6 @@ for i in ./working-dir/${1}*; do
         git add grade-info.md
         git commit -m "Add grade"
         git push
-        cd ..
+        cd ../..
     fi
 done
