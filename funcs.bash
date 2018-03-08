@@ -18,6 +18,10 @@ test_start() {
     in_test=true
     ((test_count++))
     echo "## Test ${test_count}: ${1}"
+    if [[ -n ${2} ]]; then
+        echo
+        echo "${2}"
+    fi
     echo
     echo '```'
     exec &> "./grade-info.md.test.${test_count}"
@@ -31,6 +35,12 @@ test_end() {
     cat "./grade-info.md.test.${test_count}"
     output=$(cat "./grade-info.md.test.${test_count}" | sed '/^\+/d')
     rm -f "./grade-info.md.test.${test_count}"
+    if [[ -z "${output}" ]]; then
+        lines=0
+    else
+        lines=$(wc -l <<< "${output}")
+    fi
+    echo "+ [Output Lines: ${lines}]"
     in_test=false
     echo -e '```'"\n"
 }
