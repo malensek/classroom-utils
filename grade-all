@@ -6,7 +6,7 @@ exec_script() {
     if [[ -d "${dir}" ]]; then
         cd "${dir}"
         bash "${script}"
-        cd ..
+        cd ../..
         echo "[+] ${dir}"
     fi
 }
