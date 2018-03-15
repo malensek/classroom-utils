@@ -10,7 +10,7 @@ for i in ./working-dir/${1}*; do
     if [[ -d "${i}" ]]; then
         cd "${i}"
         git add grade-info.md
-        git commit -m "Add grade"
+        git commit -m "Add grade info"
         git push
         cd ../..
     fi
