@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+unset org_name github_token token_data
+
+print_usage() {
+cat <<EOM
+Usage: $(basename "${0}") github-token org-name
+
+Where:
+    * org-name           Github org name. Ex: usf-cs220-sp18
+    * github-token       Text file containing your github token
+EOM
+}
+
+github_token="${1}"
+org_name="${2}"
+
+if [[ -z ${github_token} || -z ${org_name} ]]; then
+    print_usage
+    exit 1
+fi
+
+token_data=$(cat "${github_token}") || exit 1
+
+mkdir ./working-dir
+
+repo_url="https://api.github.com/orgs/${org_name}/repos"
+repo_list=""
+page=1
+echo -n "Retrieving repository list... "
+while true; do
+    echo -n "${page} "
+    repos=$(curl --silent --header "Authorization: token ${token_data}" \
+         --header 'Accept: application/vnd.github.v3.raw' \
+         --location "${repo_url}?page=${page}&per_page=100" \
+         | grep '"full_name": ')
+    if [[ "${repos}" == "" ]]; then
+        # No more repositories to check
+        break
+    fi
+    repo_list="${repo_list}"$'\n'"${repos}"
+    (( page++ ))
+done
+echo
+
+repo_list=$(sed "/^$/d; s|.*${org_name}/\(.*\)\",|\1|g" <<< "${repo_list}")
+if [[ -z "${repo_list}" ]]; then
+    echo "Did not find any repositories!"
+    exit 1
+fi
+
+echo "Found $(wc -l <<< "${repo_list}") repositories."
+
+for repo in ${repo_list}; do
+    git clone "https://${token_data}@github.com/${org_name}/${repo}" \
+        "./working-dir/${repo}"
+done
