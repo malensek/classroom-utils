@@ -22,7 +22,7 @@ fi
 
 token_data=$(cat "${github_token}") || exit 1
 
-mkdir ./working-dir
+mkdir "./${org_name}"
 
 repo_url="https://api.github.com/orgs/${org_name}/repos"
 repo_list=""
@@ -52,6 +52,13 @@ fi
 echo "Found $(wc -l <<< "${repo_list}") repositories."
 
 for repo in ${repo_list}; do
-    git clone "https://${token_data}@github.com/${org_name}/${repo}" \
-        "./working-dir/${repo}"
+    path="./${org_name}/${repo}"
+    if [[ ! -d "${path}" ]]; then
+        git clone "https://${token_data}@github.com/${org_name}/${repo}" \
+            "./${org_name}/${repo}"
+    else
+        cd "${path}" # -C is not widely available yet?
+        git pull
+        cd ../..
+    fi
 done
